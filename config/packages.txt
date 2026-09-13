@@ -1,0 +1,25 @@
+# Desktop
+ubuntu-desktop-minimal
+gnome-shell
+gdm3
+pipewire
+wireplumber
+
+# AMD graphics
+libgl1-mesa-dri
+mesa-vulkan-drivers
+vulkan-tools
+linux-firmware
+
+# Gaming
+gamemode
+mangohud
+
+# System / memory
+systemd-zram-generator
+
+# Image/runtime support
+network-manager
+sudo
+curl
+ca-certificates
