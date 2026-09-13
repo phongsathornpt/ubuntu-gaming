@@ -47,20 +47,24 @@ jobs:
           xorriso -indev build/ubuntu-gaming-amd64.iso -find /boot/grub/grub.cfg -type f -exec lsdl
           sha256sum --check build/ubuntu-gaming-amd64.iso.sha256
 
-      - name: QEMU firmware smoke test
+      - name: QEMU userspace boot assertion
         run: |
-          timeout 25s qemu-system-x86_64 \
+          mkdir -p build/qemu
+          timeout 120s qemu-system-x86_64 \
             -machine q35,accel=tcg \
             -m 2048 \
             -smp 2 \
             -cdrom build/ubuntu-gaming-amd64.iso \
             -boot d \
             -display none \
-            -serial stdio \
+            -serial file:build/qemu/serial.log \
             -no-reboot || status=$?
           if [[ ${status:-0} -ne 0 && ${status:-0} -ne 124 ]]; then
+            cat build/qemu/serial.log || true
             exit "${status}"
           fi
+          cat build/qemu/serial.log
+          grep -Fq 'UBUNTU_GAMING_BOOT_OK' build/qemu/serial.log
 
       - name: Upload ISO
         uses: actions/upload-artifact@v4
@@ -71,3 +75,4 @@ jobs:
             build/ubuntu-gaming-amd64.iso.sha256
           if-no-files-found: error
           retention-days: 7
+          compression-level: 0
