@@ -1,0 +1,12 @@
+[Unit]
+Description=Ubuntu Gaming CI boot marker
+After=multi-user.target
+ConditionKernelCommandLine=ubuntu-gaming.ci
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c 'echo UBUNTU_GAMING_BOOT_OK > /dev/ttyS0'
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
