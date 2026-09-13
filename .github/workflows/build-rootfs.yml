@@ -1,0 +1,58 @@
+name: Build rootfs
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "config/**"
+      - "scripts/build-rootfs.sh"
+      - ".github/workflows/build-rootfs.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "config/**"
+      - "scripts/build-rootfs.sh"
+      - ".github/workflows/build-rootfs.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rootfs-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install image tooling
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends mmdebstrap zstd
+
+      - name: Build rootfs
+        run: sudo ./scripts/build-rootfs.sh
+
+      - name: Validate rootfs
+        run: |
+          test -x build/rootfs/usr/bin/gnome-shell
+          test -e build/rootfs/usr/lib/x86_64-linux-gnu/dri/radeonsi_dri.so
+          test -e build/rootfs/usr/share/vulkan/icd.d/radeon_icd.x86_64.json
+          test -f build/rootfs/etc/systemd/zram-generator.conf
+
+      - name: Pack rootfs
+        run: sudo tar --numeric-owner -C build/rootfs -I 'zstd -T0 -10' -cf ubuntu-gaming-rootfs-amd64.tar.zst .
+
+      - name: Upload rootfs
+        uses: actions/upload-artifact@v4
+        with:
+          name: ubuntu-gaming-rootfs-amd64
+          path: ubuntu-gaming-rootfs-amd64.tar.zst
+          if-no-files-found: error
+          retention-days: 7
