@@ -6,6 +6,7 @@ BUILD_DIR="${BUILD_DIR:-${ROOT_DIR}/build}"
 ROOTFS="${BUILD_DIR}/rootfs"
 ISO_ROOT="${BUILD_DIR}/iso"
 OUTPUT="${ISO_OUTPUT:-${BUILD_DIR}/ubuntu-gaming-amd64.iso}"
+GRUB_CONFIG="${ISO_GRUB_CONFIG:-${ROOT_DIR}/iso/grub/grub.cfg}"
 
 if [[ ${EUID} -ne 0 ]]; then
   echo "build-iso.sh must run as root" >&2
@@ -14,6 +15,11 @@ fi
 
 if [[ ! -d "${ROOTFS}" ]]; then
   echo "rootfs not found: ${ROOTFS}" >&2
+  exit 1
+fi
+
+if [[ ! -f "${GRUB_CONFIG}" ]]; then
+  echo "GRUB config not found: ${GRUB_CONFIG}" >&2
   exit 1
 fi
 
@@ -30,7 +36,7 @@ mkdir -p "${ISO_ROOT}/casper" "${ISO_ROOT}/boot/grub"
 
 cp "${KERNEL}" "${ISO_ROOT}/casper/vmlinuz"
 cp "${INITRD}" "${ISO_ROOT}/casper/initrd"
-cp "${ROOT_DIR}/iso/grub/grub.cfg" "${ISO_ROOT}/boot/grub/grub.cfg"
+cp "${GRUB_CONFIG}" "${ISO_ROOT}/boot/grub/grub.cfg"
 
 mksquashfs "${ROOTFS}" "${ISO_ROOT}/casper/filesystem.squashfs" \
   -noappend -comp zstd -b 1M
