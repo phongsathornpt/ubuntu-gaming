@@ -36,7 +36,7 @@ jobs:
       - name: Build rootfs
         run: sudo bash ./scripts/build-rootfs.sh
 
-      - name: Build ISO
+      - name: Build release ISO
         run: sudo bash ./scripts/build-iso.sh
 
       - name: Validate ISO structure
@@ -47,6 +47,12 @@ jobs:
           xorriso -indev build/ubuntu-gaming-amd64.iso -find /boot/grub/grub.cfg -type f -exec lsdl
           sha256sum --check build/ubuntu-gaming-amd64.iso.sha256
 
+      - name: Build CI boot ISO
+        run: |
+          sudo ISO_GRUB_CONFIG="$PWD/iso/grub/grub-ci.cfg" \
+            ISO_OUTPUT="$PWD/build/ubuntu-gaming-ci-amd64.iso" \
+            bash ./scripts/build-iso.sh
+
       - name: QEMU userspace boot assertion
         run: |
           mkdir -p build/qemu
@@ -54,7 +60,7 @@ jobs:
             -machine q35,accel=tcg \
             -m 2048 \
             -smp 2 \
-            -cdrom build/ubuntu-gaming-amd64.iso \
+            -cdrom build/ubuntu-gaming-ci-amd64.iso \
             -boot d \
             -display none \
             -serial file:build/qemu/serial.log \
