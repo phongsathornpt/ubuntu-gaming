@@ -26,7 +26,7 @@ mmdebstrap \
 
 cp -a "${ROOT_DIR}/config/rootfs/." "${ROOTFS}/"
 
-chroot "${ROOTFS}" systemctl enable gdm3 NetworkManager
+systemctl --root="${ROOTFS}" enable gdm3 NetworkManager ubuntu-gaming-ci.service
 
 printf 'ubuntu-gaming\n' > "${ROOTFS}/etc/hostname"
 
