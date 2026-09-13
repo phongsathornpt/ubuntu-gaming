@@ -19,6 +19,8 @@ mangohud
 systemd-zram-generator
 
 # Image/runtime support
+linux-generic
+casper
 network-manager
 sudo
 curl
